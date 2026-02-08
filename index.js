@@ -27,12 +27,12 @@ const start = async () => {
     console.log("--- ĐANG KHỞI CHẠY BOT ---");
 
     // Login con Bot thường trước, k đợi con Selfbot
-    bot.login(process.env.TOKEN_BOT_THUONG)
+    bot.login("MTQ2OTkxNTE5MjUwOTk4ODkyNQ.G-t1_d.LWX_qBLgei2tGeswj19qxoQpMBGadyMk-ewKhQ")
         .then(() => console.log("✅ Bot thường đã lên!"))
         .catch(e => console.error("❌ Bot thường sai Token:", e.message));
 
     // Login Selfbot sau, tạch cũng k sao
-    spy.login(process.env.TOKEN_ACC_CLONE)
+    spy.login("MTQxNjQ0NTUxNTUyNDIxMDg0Mg.GhxiJF.r0Z0GFUNjqE7yN0fScb0cFNziq1XT_4mk3kT48")
         .then(() => console.log("✅ Selfbot đã lên!"))
         .catch(e => console.error("❌ Selfbot kẹt login:", e.message));
 };
@@ -41,20 +41,27 @@ start();
 
 // 5. Selfbot Logic
 spy.on('messageCreate', async (msg) => {
-    if (msg.guildId !== targetGuildId) return;
-    if (msg.author.id !== NEKO_ID) return;
+    if (msg.guildId !== targetGuildId || msg.author.id !== NEKO_ID) return;
 
     const content = msg.content || (msg.embeds[0]?.description) || "";
-    if (!content.includes('Tài/Xỉu')) return;
+    
+    // Dùng Regex bắt chữ sau dấu : và nằm trong cặp dấu **
+    // Kết quả trả về sẽ là chữ nằm đúng vị trí đó
+    const txMatch = content.match(/Tài\/Xỉu:\s*\*\*(Tài|Xỉu)\*\*/i);
+    const clMatch = content.match(/Chẵn\/Lẻ:\s*\*\*(Chẵn|Lẻ)\*\*/i);
+
+    if (!txMatch || !clMatch) return; // K tìm thấy đúng định dạng thì cút
+
+    const type1 = txMatch[1]; // Nó sẽ lấy đúng chữ 'Tài' hoặc 'Xỉu'
+    const type2 = clMatch[1]; // Nó sẽ lấy đúng chữ 'Chẵn' hoặc 'Lẻ'
 
     let data = JSON.parse(fs.readFileSync('history.json'));
-    const isTai = content.includes('Tài');
-    const isChan = content.includes('Chẵn');
 
-    data.logs.push({ type1: isTai ? 'Tài' : 'Xỉu', type2: isChan ? 'Chẵn' : 'Lẻ' });
+    data.logs.push({ type1, type2 });
 
     if (data.logs.length > LIMIT) data.logs.shift();
 
+    // Reset stats và tính lại từ logs
     data.stats = data.logs.reduce((acc, log) => {
         acc.total++;
         log.type1 === 'Tài' ? acc.tai++ : acc.xiu++;
@@ -63,7 +70,7 @@ spy.on('messageCreate', async (msg) => {
     }, { tai: 0, xiu: 0, chan: 0, le: 0, total: 0 });
 
     fs.writeFileSync('history.json', JSON.stringify(data, null, 2));
-    console.log(`[Spy] Cập nhật ván mới. Hiện tại: ${data.logs.length}/${LIMIT}`);
+    console.log(`[Spy] Đã húp ván: ${type1} - ${type2}`);
 });
 
 // 6. Bot Logic
