@@ -89,5 +89,5 @@ bot.on('interactionCreate', async (interaction) => {
     }
 });
 // Login cả 2
-spy.login('ODgxNzc3MzgxNzc2NDUzNjYz.G8Cp0d.ewYc7hpTx8Lb9-uKywezcy5iR7qXnDFS8taWgc');
-bot.login('MTQ1NzMyOTIxMTgwNjE4NzY0Mg.GwsS0p.DNbT6cNyz9ZMhEe7O-0Ajt5bY87GJhxyHztM1o');
+spy.login(process.env.TOKEN_ACC_CLONE);
+bot.login(process.env.TOKEN_BOT_THUONG);
