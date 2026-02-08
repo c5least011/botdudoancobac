@@ -2,8 +2,9 @@ const { Client: SelfClient } = require('discord.js-selfbot-v13');
 const { Client, GatewayIntentBits, SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 const http = require('http');
+const env = require('dotenv').config();
 
-// --- TẠO WEB SERVER ĐỂ TREO RENDER ---
+// port
 http.createServer((req, res) => {
     res.write("Bot is running!");
     res.end();
@@ -13,10 +14,10 @@ const spy = new SelfClient();
 const bot = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 const NEKO_ID = '1248205177589334026';
-const LIMIT = 40; // Giới hạn 40 ván của m đây
+const LIMIT = 40;
 let targetChannel = null;
 
-// --- LOGIC SELF-BOT ---
+// selfbot logic
 spy.on('messageCreate', async (msg) => {
     if (msg.author.id !== NEKO_ID) return;
 
@@ -33,15 +34,13 @@ spy.on('messageCreate', async (msg) => {
         type2: isChan ? 'Chẵn' : 'Lẻ'
     };
 
-    // Thêm ván mới
     data.logs.push(entry);
 
-    // Nếu quá 40 ván thì xóa ván cũ nhất
+    // auto limit
     if (data.logs.length > LIMIT) {
         data.logs.shift();
     }
 
-    // Tính toán lại stats dựa trên đúng 40 ván trong logs
     data.stats = data.logs.reduce((acc, log) => {
         acc.total++;
         log.type1 === 'Tài' ? acc.tai++ : acc.xiu++;
@@ -53,7 +52,7 @@ spy.on('messageCreate', async (msg) => {
     console.log(`[Spy] Cập nhật ván mới. Hiện tại: ${data.logs.length}/${LIMIT}`);
 });
 
-// --- LOGIC BOT THƯỜNG ---
+// bot logic
 bot.on('ready', async () => {
     const commands = [
         { name: 'setup', description: 'Setup channel' },
@@ -83,11 +82,11 @@ bot.on('interactionCreate', async (interaction) => {
         const predict2 = getRes(data.stats.chan, data.stats.total) ? 'Chẵn' : 'Lẻ';
 
         await interaction.reply({
-            content: `🕵️ **Dự báo gián điệp (Data ${data.logs.length} ván):**\n- Kết quả: **${predict1}**\n- Kiểu: **${predict2}**`,
+            content: `🕵️ **Dự báo (Data ${data.logs.length} ván):**\n- Kết quả: **${predict1}**\n- Kiểu: **${predict2}**`,
             ephemeral: true
         });
     }
 });
-// Login cả 2
+// Login
 spy.login(process.env.TOKEN_ACC_CLONE);
 bot.login(process.env.TOKEN_BOT_THUONG);

@@ -1,0 +1,12 @@
+# Thư mục thư viện (Siêu nặng, k được push lên GitHub)
+node_modules/
+
+# File lưu data cục bộ (Để Render k ghi đè khi m update code)
+history.json
+
+# Các file hệ thống và log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.DS_Store
