@@ -24,24 +24,17 @@ http.createServer((req, res) => {
 
 // 4. Logic Start (Để ở đây sau khi đã khai báo spy/bot)
 const start = async () => {
-    try {
-        console.log("--- ĐANG KHỞI CHẠY BOT ---");
-        
-        if (!process.env.TOKEN_ACC_CLONE || !process.env.TOKEN_BOT_THUONG) {
-            throw new Error("Render chưa nạp biến môi trường! Check lại mục Environment.");
-        }
+    console.log("--- ĐANG KHỞI CHẠY BOT ---");
 
-        console.log("Đang login Selfbot...");
-        await spy.login(process.env.TOKEN_ACC_CLONE);
-        console.log("✅ Selfbot OK!");
+    // Login con Bot thường trước, k đợi con Selfbot
+    bot.login(process.env.TOKEN_BOT_THUONG)
+        .then(() => console.log("✅ Bot thường đã lên!"))
+        .catch(e => console.error("❌ Bot thường sai Token:", e.message));
 
-        console.log("Đang login Bot thường...");
-        await bot.login(process.env.TOKEN_BOT_THUONG);
-        // Dòng này sẽ hiện khi cả 2 login xong
-    } catch (err) {
-        console.error("❌ LỖI RỒI M ƠI:");
-        console.error(err.message);
-    }
+    // Login Selfbot sau, tạch cũng k sao
+    spy.login(process.env.TOKEN_ACC_CLONE)
+        .then(() => console.log("✅ Selfbot đã lên!"))
+        .catch(e => console.error("❌ Selfbot kẹt login:", e.message));
 };
 
 start();
