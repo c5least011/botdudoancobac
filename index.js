@@ -2,7 +2,29 @@ const { Client: SelfClient } = require('discord.js-selfbot-v13');
 const { Client, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
 const http = require('http');
-require('dotenv').config(); 
+const start = async () => {
+    try {
+        console.log("--- ĐANG KHỞI CHẠY BOT ---");
+        
+        if (!process.env.TOKEN_ACC_CLONE || !process.env.TOKEN_BOT_THUONG) {
+            throw new Error("Render chưa nạp biến môi trường! Check lại mục Environment.");
+        }
+
+        console.log("Đang login Selfbot...");
+        await spy.login(process.env.TOKEN_ACC_CLONE);
+        console.log("✅ Selfbot OK!");
+
+        console.log("Đang login Bot thường...");
+       await bot.login(process.env.TOKEN_BOT_THUONG); 
+        console.log('Bot dự đoán ready!'); 
+
+    } catch (err) {
+        console.error("❌ LỖI RỒI M ƠI:");
+        console.error(err);
+    }
+};
+
+start();
 
 // port
 http.createServer((req, res) => {
