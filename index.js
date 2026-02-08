@@ -1,8 +1,8 @@
 const { Client: SelfClient } = require('discord.js-selfbot-v13');
-const { Client, GatewayIntentBits, SlashCommandBuilder } = require('discord.js');
+const { Client, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
 const http = require('http');
-const env = require('dotenv').config();
+require('dotenv').config(); 
 
 // port
 http.createServer((req, res) => {
@@ -15,10 +15,16 @@ const bot = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 const NEKO_ID = '1248205177589334026';
 const LIMIT = 40;
-let targetChannel = null;
+
+let targetGuildId = null;
+
+if (!fs.existsSync('history.json')) {
+    fs.writeFileSync('history.json', JSON.stringify({ logs: [], stats: { tai: 0, xiu: 0, chan: 0, le: 0, total: 0 } }));
+}
 
 // selfbot logic
 spy.on('messageCreate', async (msg) => {
+    if (msg.guildId !== targetGuildId) return;
     if (msg.author.id !== NEKO_ID) return;
 
     const content = msg.content || (msg.embeds[0]?.description) || "";
@@ -66,12 +72,19 @@ bot.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === 'setup') {
-        targetChannel = interaction.channelId;
+        const currentGuildId = interaction.guildId;
+
+        if (!currentGuildId) return interaction.reply({ content: 'Lệnh này phải dùng trong Server.', ephemeral: true });
+        if (!spy.guilds.cache.has(currentGuildId)) {
+            return interaction.reply({ content: '❌ Selfbot ko có trong server này.', ephemeral: true });
+        }
+
+        targetGuildId = currentGuildId;
         return interaction.reply({ content: '✅ Đã setup channel.', ephemeral: true });
     }
 
     if (interaction.commandName === 'tx') {
-        if (interaction.channelId !== targetChannel) return interaction.reply({ content: 'Sai channel.', ephemeral: true });
+        if (interaction.guildId !== targetGuildId) return interaction.reply({ content: 'Sai channel.', ephemeral: true });
 
         const data = JSON.parse(fs.readFileSync('history.json'));
         if (data.logs.length < 5) return interaction.reply({ content: `Chưa đủ data (Cần ít nhất 5 ván, hiện có ${data.logs.length})`, ephemeral: true });
@@ -87,6 +100,7 @@ bot.on('interactionCreate', async (interaction) => {
         });
     }
 });
+
 // Login
 spy.login(process.env.TOKEN_ACC_CLONE);
 bot.login(process.env.TOKEN_BOT_THUONG);
